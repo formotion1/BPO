@@ -1,0 +1,159 @@
+using System;
+
+namespace Лаба_6._1
+{
+    interface IMoney
+    {
+        void Add(Money other);
+        void Subtract(Money other);
+        double Divide(Money divisor);
+        void Divide(double divisor);
+        void Multiply(double factor);
+        bool Equals(Money other);
+    }
+
+    abstract class Money : IMoney
+    {
+        protected long rubles;
+        protected int kopeks;
+
+        public Money(long rubles, int kopeks)
+        {
+            this.rubles = rubles;
+            this.kopeks = kopeks;
+        }
+
+        public void Add(Money other)
+        {
+            rubles += other.rubles;
+            kopeks += other.kopeks;
+
+            Normalize();
+        }
+
+        public void Subtract(Money other)
+        {
+            rubles -= other.rubles;
+            kopeks -= other.kopeks;
+
+            Normalize();
+        }
+
+        public double Divide(Money divisor)
+        {
+            double dividend = ToKopeks();
+            double divisorValue = divisor.ToKopeks();
+
+            double divisionResult = dividend / divisorValue;
+
+            return Math.Round(divisionResult, 2);
+        }
+
+        public void Divide(double divisor)
+        {
+            double totalKopeks = ToKopeks() / divisor;
+
+            rubles = (long)(totalKopeks / 100);
+            kopeks = (int)(totalKopeks % 100);
+
+            Normalize();
+        }
+
+        public void Multiply(double factor)
+        {
+            double totalKopeks = ToKopeks() * factor;
+
+            rubles = (long)(totalKopeks / 100);
+            kopeks = (int)(totalKopeks % 100);
+
+            Normalize();
+        }
+
+        public bool Equals(Money other)
+        {
+            return rubles == other.rubles && kopeks == other.kopeks;
+        }
+
+        public override string ToString()
+        {
+            string result = $"{rubles},{kopeks:00}";
+            return result;
+        }
+
+        protected double ToKopeks()
+        {
+            return rubles * 100 + kopeks;
+        }
+
+        protected void Normalize()
+        {
+            if (kopeks >= 100)
+            {
+                rubles += kopeks / 100;
+                kopeks %= 100;
+            }
+            else if (kopeks < 0)
+            {
+                rubles -= Math.Abs(kopeks) / 100 + 1;
+                kopeks = 100 - (Math.Abs(kopeks) % 100);
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.Write("Введите сумму 1 (рубли): ");
+            long rubles1 = long.Parse(Console.ReadLine());
+
+            Console.Write("Введите сумму 1 (копейки): ");
+            int kopeks1 = int.Parse(Console.ReadLine());
+
+            Console.Write("Введите сумму 2 (рубли): ");
+            long rubles2 = long.Parse(Console.ReadLine());
+
+            Console.Write("Введите сумму 2 (копейки): ");
+            int kopeks2 = int.Parse(Console.ReadLine());
+
+            Money money1 = new MoneyImpl(rubles1, kopeks1);
+            Money money2 = new MoneyImpl(rubles2, kopeks2);
+
+            Console.WriteLine($"Сумма 1: {money1} руб.");
+            Console.WriteLine($"Сумма 2: {money2} руб.");
+
+            money1.Add(money2);
+            Console.WriteLine($"Сумма 1 + Сумма 2 = {money1} руб.");
+
+            money1 = new MoneyImpl(rubles1, kopeks1);
+            money1.Subtract(money2);
+            Console.WriteLine($"Сумма 1 - Сумма 2 = {money1} руб.");
+
+            money1 = new MoneyImpl(rubles1, kopeks1);
+            double divisionResult = money1.Divide(money2);
+            Console.WriteLine($"Сумма 1 / Сумма 2 = {divisionResult}");
+
+            money1 = new MoneyImpl(rubles1, kopeks1);
+            Console.Write("Введите делитель: ");
+            double divisor = double.Parse(Console.ReadLine());
+            money1.Divide(divisor);
+            Console.WriteLine($"Сумма 1 / {divisor} = {money1} руб.");
+
+            money1 = new MoneyImpl(rubles1, kopeks1);
+            Console.Write("Введите множитель: ");
+            double factor = double.Parse(Console.ReadLine());
+            money1.Multiply(factor);
+            Console.WriteLine($"Сумма 1 * {factor} = {money1} руб.");
+
+            money1 = new MoneyImpl(rubles1, kopeks1);
+            Console.WriteLine($"Сумма 1 == Сумма 2? {money1.Equals(money2)}");
+        }
+    }
+
+    class MoneyImpl : Money
+    {
+        public MoneyImpl(long rubles, int kopeks) : base(rubles, kopeks)
+        {
+        }
+    }
+}
